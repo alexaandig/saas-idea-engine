@@ -5,9 +5,9 @@ import { useState, useEffect, useRef } from "react";
 const STEPS = [
   { id: 1, label: "Pick Market", short: "Market" },
   { id: 2, label: "Research", short: "Research" },
-  { id: 3, label: "JTBD", short: "JTBD" },
-  { id: 4, label: "Score", short: "Score" },
-  { id: 5, label: "Competition", short: "Compete" },
+  { id: 3, label: "Jobs-to-be-Done", short: "JTBD" },
+  { id: 4, label: "Product Prioritization", short: "Score" },
+  { id: 5, label: "Competition", short: "Competition" },
   { id: 6, label: "Generate Ideas", short: "Ideas" },
   { id: 7, label: "Prioritize", short: "Priority" },
   { id: 8, label: "Acquisition", short: "Acquire" },
@@ -221,7 +221,7 @@ function ProseBlock({ text }) {
               {line.replace(/^#+\s*/, "")}
             </h3>
           );
-        if (line.startsWith("**") && line.endsWith("**"))
+        if (line.startsWith("⚡") && line.endsWith("⚡"))
           return (
             <strong key={i} style={{ color: "#80f0a0", display: "block" }}>
               {line.replace(/\*\*/g, "")}
@@ -546,7 +546,7 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
           )}
         </div>
 
-        <div style={{ maxWidth: 90vw, margin: "0 auto", padding: "32px 24px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
           {/* Intro / Market Input */}
           {step === 0 && (
             <div style={{ animation: "fadeUp 0.5s ease" }}>
