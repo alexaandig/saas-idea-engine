@@ -26,9 +26,14 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "app/page.jsx", "app/layout.jsx"  ],
+    "**/*.mts",
+    "app/page.jsx",
+    "app/layout.jsx",
+    "app/page.js",
+    "app/layout.js"
+  ],
   "exclude": ["node_modules"]
 }
