@@ -18,6 +18,16 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
+
+> **AI provider**: this app originally used Claude, but it now calls a Gemini‑compatible LLM. By default it hits OpenAI's Responses API, but you can override the URL and key:
+> 
+> ```bash
+> export GEMINI_API_KEY="<your-gemini-key>"
+> export GEMINI_API_URL="https://api.openai.com/v1/responses" # or a Google Gemini endpoint
+> ```
+> 
+> If you don't set `GEMINI_API_KEY`, `OPENAI_API_KEY` is still usable. Adjust the `MODEL` constant in `app/page.js` for a different Gemini variant.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

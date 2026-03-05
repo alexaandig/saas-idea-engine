@@ -15,21 +15,39 @@ const STEPS = [
 ];
 const TOTAL_STEPS = 9;
 
-const MODEL = "claude-sonnet-4-20250514";
+// call Gemini-compatible LLM using a configurable endpoint/key. by default
+// it points at OpenAI's Responses API but you can override via
+// GEMINI_API_URL and GEMINI_API_KEY (e.g. a Google‑provided Gemini key).
+const MODEL = "gemini-1.0"; // change if you prefer another Gemini variant
 
-async function callClaude(systemPrompt, userPrompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+async function callGemini(systemPrompt, userPrompt) {
+  const url = process.env.GEMINI_API_URL || "https://api.openai.com/v1/responses";
+  const key = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+  if (!key) {
+    throw new Error("No API key provided. Set GEMINI_API_KEY or OPENAI_API_KEY.");
+  }
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
+      input: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
     }),
   });
   const data = await res.json();
-  return data.content?.map((b) => b.text || "").join("\n") || "";
+  // Responses-style output may live in output_text or an array
+  return (
+    data.output_text ||
+    data.output?.[0]?.content?.map((c) => c.text || "").join("\n") ||
+    ""
+  );
 }
 
 function Spinner() {
@@ -327,12 +345,12 @@ export default function App() {
       const m = market;
 
       if (stepNum === 1) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a SaaS market strategist. Be concise and direct.",
           `Step 1: Analyze why "${m}" is a good or risky niche for SaaS. Discuss: specificity, information advantage, product-led growth potential, and accessibility. Keep it to 5–7 bullet points.`,
         );
       } else if (stepNum === 2) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a market research analyst and opportunity scorer. Be specific, data-driven, and direct. Use bullet points and clear sections.",
           `Analyze the "${m}" market as a SaaS opportunity. Structure your response in these sections:
 
@@ -352,17 +370,17 @@ export default function App() {
 Rate this market opportunity 1–10 (1 = low demand/high competition, 10 = high demand/low competition). Give the score and a 2-sentence justification.`,
         );
       } else if (stepNum === 3) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a Jobs-to-be-Done (JTBD) research expert. Return ONLY a markdown table, no preamble, no explanation, no extra text before or after. Just the raw table.",
           `List the top 8 Jobs To Be Done for "${m}". Use exactly these three columns: Job | Pain Point | Current Tools. Output only the markdown table.`,
         );
       } else if (stepNum === 4) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a product prioritization expert. Be analytical.",
           `Step 4: Score the top 8 Jobs To Be Done for "${m}" on Pain (1–5) and Frequency (1–5). Calculate Impact Score (Pain × Frequency). Sort by highest impact. Use a markdown table: Job | Pain (1-5) | Frequency (1-5) | Impact Score | Priority`,
         );
       } else if (stepNum === 5) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a competitive intelligence analyst and sales strategist. Identify white space opportunities and buyer objections.",
           `For the "${m}" market, do two things:
 
@@ -373,17 +391,17 @@ For the top 5 highest-impact JTBDs, analyze existing solutions. Use a markdown t
 List the top 5 objections a buyer in this market would have before purchasing a new SaaS tool. For each, write a persuasive, trust-building response that turns "I'm not sure" into "Where do I pay?" Format as: Objection | Persuasive Response`,
         );
       } else if (stepNum === 6) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a SaaS product ideation expert focused on AI-powered micro-SaaS. Be creative and specific.",
           `Step 6: Generate 25 Micro SaaS ideas for "${m}" based on the top JTBDs. For each idea include: Name, Core Problem Solved, AI Feature, and Pricing Model. Use a markdown table: # | Idea Name | Problem Solved | AI Feature | Price/mo`,
         );
       } else if (stepNum === 7) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a startup advisor. Be decisive and practical.",
           `For the top SaaS ideas targeting "${m}", prioritize the TOP 5 based on: JTBD importance, MVP simplicity, competitive gap, and data access. Use a markdown table: Rank | Idea | Why It Wins | MVP Complexity (1-5) | Validation Method`,
         );
       } else if (stepNum === 8) {
-        output = await callClaude(
+        output = await callGemini(
           "You are a growth strategist and GTM expert. Be tactical and specific. No fluff.",
           `For a SaaS product targeting "${m}", provide two sections:
 
@@ -444,7 +462,7 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
     };
     try {
       const { system, user } = prompts[id];
-      const output = await callClaude(system, user);
+      const output = await callGemini(system, user);
       setBonusResults((prev) => ({ ...prev, [id]: output }));
     } catch (e) {
       setBonusResults((prev) => ({ ...prev, [id]: "Error: " + e.message }));
@@ -1113,7 +1131,7 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
                 fontFamily: "'DM Mono', monospace",
               }}
             >
-              POWERED BY CLAUDE SONNET
+              POWERED BY GEMINI
             </span>
             <span
               style={{
