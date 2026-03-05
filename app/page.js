@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { GoogleGenAI } from "@google/genai";
 
 const STEPS = [
   { id: 1, label: "Pick Market", short: "Market" },
@@ -16,29 +15,19 @@ const STEPS = [
 ];
 const TOTAL_STEPS = 9;
 
-// call Gemini-compatible LLM using the Google GenAI client (package `@google/genai`).
-// configuration is still controlled by env vars: GEMINI_API_KEY (or OPENAI_API_KEY)
-// and MODEL.  The older fetch-based fallback has been removed since the
-// library handles retries and encoding for us.
-const MODEL = "gemini-1.0"; // change if you prefer another Gemini variant
-
-// initialize the client once; undefined key will throw when used.
-const googleAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY,
-});
+// call Gemini-compatible LLM by proxying through our server API.
+// the real request happens in `app/api/genai/route.js`, so the API key
+// stays on the server and never leaks to the browser.
+const MODEL = "gemini-1.0"; // used by the server route by default
 
 async function callGemini(systemPrompt, userPrompt) {
-  if (!googleAI) throw new Error("GenAI client not initialized");
-
-  const payload = {
-    model: MODEL,
-    // simple conversation: concatenate system + user prompts;
-    // you can adjust to whatever the SDK expects (string or array).
-    contents: `${systemPrompt}\n\n${userPrompt}`,
-  };
-
-  const response = await googleAI.models.generateContent(payload);
-  return response.text || "";
+  const res = await fetch("/api/genai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ system: systemPrompt, user: userPrompt }),
+  });
+  const data = await res.json();
+  return data.text || "";
 }
 
 function Spinner() {
