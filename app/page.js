@@ -305,10 +305,6 @@ function ResultBlock({ text, stepNum }) {
 export default function App() {
   const [step, setStep] = useState(0);
   const [market, setMarket] = useState("");
-  const [concept, setConcept] = useState("");
-  const [audience, setAudience] = useState("");
-  const [finderLoading, setFinderLoading] = useState(false);
-  const [finderResult, setFinderResult] = useState("");
   const [results, setResults] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -409,21 +405,6 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
 
   const isStepDone = (n) => !!results[n];
   const currentStepData = results[step];
-
-  const runFinder = async () => {
-    setFinderLoading(true);
-    setError("");
-    try {
-      const output = await callGemini(
-        "You are a market research analyst.",
-        `Analyze my business idea of "${concept}" for "${audience}". Identify market gaps, high-potential niches, 3 competitors to watch, current trends, customer pain points & pricing insights.`
-      );
-      setFinderResult(output);
-    } catch (e) {
-      setError("API error: " + e.message);
-    }
-    setFinderLoading(false);
-  };
 
   const runBonus = async (id) => {
     setBonusLoading(id);
@@ -614,7 +595,6 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
                 </p>
               </div>
 
-              {/* Market Opportunity Finder */}
               <div
                 style={{
                   background: "#070f0a",
@@ -624,103 +604,6 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
                   marginBottom: 32,
                 }}
               >
-                <label
-                  style={{
-                    color: "#70a080",
-                    fontSize: 12,
-                    fontFamily: "'DM Mono', monospace",
-                    letterSpacing: 2,
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  Market Opportunity Finder
-                </label>
-                <div
-                  style={{
-                    color: "#507060",
-                    fontSize: 11,
-                    fontFamily: "'DM Mono', monospace",
-                    marginBottom: 12,
-                  }}
-                >
-                  "Find the gold before you dig"
-                </div>
-                <input
-                  value={concept}
-                  onChange={(e) => setConcept(e.target.value)}
-                  placeholder="Business idea / concept"
-                  style={{
-                    width: "100%",
-                    background: "#040e08",
-                    border: "1px solid #0f2a18",
-                    borderRadius: 8,
-                    padding: "10px 14px",
-                    color: "#c0e8d0",
-                    fontSize: 14,
-                    fontFamily: "'DM Mono', monospace",
-                    marginBottom: 10,
-                  }}
-                />
-                <input
-                  value={audience}
-                  onChange={(e) => setAudience(e.target.value)}
-                  placeholder="Target audience (e.g. solo dentists)"
-                  style={{
-                    width: "100%",
-                    background: "#040e08",
-                    border: "1px solid #0f2a18",
-                    borderRadius: 8,
-                    padding: "10px 14px",
-                    color: "#c0e8d0",
-                    fontSize: 14,
-                    fontFamily: "'DM Mono', monospace",
-                    marginBottom: 12,
-                  }}
-                />
-                <button
-                  className="run-btn"
-                  onClick={runFinder}
-                  disabled={!concept.trim() || !audience.trim() || finderLoading}
-                  style={{
-                    width: "100%",
-                    background: "#20a050",
-                    border: "none",
-                    borderRadius: 12,
-                    padding: "12px 32px",
-                    color: "#fff",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor:
-                      !concept.trim() || !audience.trim() || finderLoading
-                        ? "not-allowed"
-                        : "pointer",
-                    opacity:
-                      !concept.trim() || !audience.trim() || finderLoading
-                        ? 0.5
-                        : 1,
-                    transition: "all 0.2s",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  {finderLoading ? "Researching..." : "→ Find Opportunity"}
-                </button>
-                {finderResult && (
-                  <div style={{ marginTop: 16 }}>
-                    <ResultBlock text={finderResult} stepNum={0} />
-                  </div>
-                )}
-              </div>
-
-              <div
-                style={{
-                  background: "#070f0a",
-                  border: "1px solid #0f2a18",
-                  borderRadius: 16,
-                  padding: 32,
-                  marginBottom: 32,
-                }}
-                >
                 <label
                   style={{
                     color: "#70a080",
