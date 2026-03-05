@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { GoogleGenAI } from "@google/genai";
 
 const STEPS = [
   { id: 1, label: "Pick Market", short: "Market" },
@@ -15,39 +16,29 @@ const STEPS = [
 ];
 const TOTAL_STEPS = 9;
 
-// call Gemini-compatible LLM using a configurable endpoint/key. by default
-// it points at OpenAI's Responses API but you can override via
-// GEMINI_API_URL and GEMINI_API_KEY (e.g. a Google‑provided Gemini key).
+// call Gemini-compatible LLM using the Google GenAI client (package `@google/genai`).
+// configuration is still controlled by env vars: GEMINI_API_KEY (or OPENAI_API_KEY)
+// and MODEL.  The older fetch-based fallback has been removed since the
+// library handles retries and encoding for us.
 const MODEL = "gemini-1.0"; // change if you prefer another Gemini variant
 
-async function callGemini(systemPrompt, userPrompt) {
-  const url = process.env.GEMINI_API_URL || "https://api.openai.com/v1/responses";
-  const key = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
-  if (!key) {
-    throw new Error("No API key provided. Set GEMINI_API_KEY or OPENAI_API_KEY.");
-  }
+// initialize the client once; undefined key will throw when used.
+const googleAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY,
+});
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      input: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    }),
-  });
-  const data = await res.json();
-  // Responses-style output may live in output_text or an array
-  return (
-    data.output_text ||
-    data.output?.[0]?.content?.map((c) => c.text || "").join("\n") ||
-    ""
-  );
+async function callGemini(systemPrompt, userPrompt) {
+  if (!googleAI) throw new Error("GenAI client not initialized");
+
+  const payload = {
+    model: MODEL,
+    // simple conversation: concatenate system + user prompts;
+    // you can adjust to whatever the SDK expects (string or array).
+    contents: `${systemPrompt}\n\n${userPrompt}`,
+  };
+
+  const response = await googleAI.models.generateContent(payload);
+  return response.text || "";
 }
 
 function Spinner() {
