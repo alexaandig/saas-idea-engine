@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Ambient module declarations for Next.js generated validator imports
 // This file ensures imports referencing the compiled .js files from
 // the app directory resolve when using .jsx pages.
