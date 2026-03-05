@@ -546,7 +546,7 @@ Suggest 5 high-leverage partnerships that can drive traffic, boost credibility, 
           )}
         </div>
 
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
+        <div style={{ maxWidth: 90vw, margin: "0 auto", padding: "32px 24px" }}>
           {/* Intro / Market Input */}
           {step === 0 && (
             <div style={{ animation: "fadeUp 0.5s ease" }}>
